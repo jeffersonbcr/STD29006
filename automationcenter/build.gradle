@@ -1,0 +1,40 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.2.0'
+	id 'io.spring.dependency-management' version '1.1.4'
+	id 'application'  // Adicione esta linha
+}
+
+group = 'engtelecom.std'
+version = '0.0.1-SNAPSHOT'
+
+application {
+    mainClassName = 'engtelecom.std.automationcenter.AutomationcenterApplication'
+}
+
+java {
+	sourceCompatibility = '17'
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	implementation 'org.springframework.boot:spring-boot-starter-amqp'
+	implementation 'org.json:json:20210307'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}

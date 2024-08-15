@@ -1,0 +1,240 @@
+openapi: '3.0.2'
+info:
+  title: Automation Center API
+  version: '1.0'
+servers:
+  - url: https://localhost/api/v1
+
+paths:
+  /device:
+    post:
+      summary: "Registra um novo dispositivo"
+      description: "Adiciona um novo dispositivo ao centro de automação"
+      operationId: registerDevice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Device'
+      responses:
+        '200':
+          description: "Dispositivo registrado com sucesso"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+  /devices:
+    get:
+      summary: "Obtém todos os dispositivos"
+      description: "Retorna uma coleção de todos os dispositivos registrados no centro de automação"
+      operationId: getAllDevices
+      responses:
+        '200':
+          description: "Lista de dispositivos obtida com sucesso"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Device'
+
+  /devices/{deviceId}:
+    get:
+      summary: "Obtém um dispositivo específico"
+      description: "Retorna os detalhes de um dispositivo pelo ID"
+      operationId: getDevice
+      parameters:
+        - $ref: '#/components/parameters/deviceId'
+      responses:
+        '200':
+          description: "Dispositivo encontrado"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '404':
+          description: "Dispositivo não encontrado"
+
+  /devices/{deviceId}/settings/{functionality}:
+    put:
+      summary: "Atualiza uma funcionalidade específica do dispositivo"
+      description: "Modifica uma funcionalidade de um dispositivo existente"
+      operationId: updateDeviceFunctionality
+      parameters:
+        - $ref: '#/components/parameters/deviceId'
+        - $ref: '#/components/parameters/functionality'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: "Funcionalidade atualizada com sucesso"
+        '404':
+          description: "Dispositivo ou funcionalidade não encontrada"
+
+  /environments:
+    get:
+      summary: "Lista todos os ambientes"
+      description: "Retorna uma lista de todos os ambientes registrados"
+      operationId: listEnvironments
+      responses:
+        '200':
+          description: "Lista de ambientes obtida com sucesso"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Environment'
+    post:
+      summary: "Cria um novo ambiente"
+      description: "Adiciona um novo ambiente ao centro de automação"
+      operationId: createEnvironment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Environment'
+      responses:
+        '200':
+          description: "Ambiente criado com sucesso"
+        '400':
+          description: "Erro na criação do ambiente"
+
+  /environments/{local}/devices:
+    put:
+      summary: "Adiciona um dispositivo a um ambiente"
+      description: "Associa um dispositivo a um ambiente específico"
+      operationId: addDeviceToEnvironment
+      parameters:
+        - $ref: '#/components/parameters/local'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Device'
+      responses:
+        '200':
+          description: "Dispositivo adicionado ao ambiente com sucesso"
+        '404':
+          description: "Ambiente não encontrado"
+  /environments/{local}/turn-off:
+      post:
+        summary: "Desliga todos os dispositivos em um ambiente"
+        description: "Desativa todos os dispositivos associados a um ambiente específico"
+        operationId: turnOffAllDevicesInEnvironment
+        parameters:
+          - $ref: '#/components/parameters/local'
+        responses:
+          '200':
+            description: "Todos os dispositivos no ambiente foram desligados com sucesso"
+          '404':
+            description: "Ambiente não encontrado"
+          '500':
+            description: "Erro interno do servidor"
+
+  /environments/devices:
+    post:
+      summary: "Cria um ambiente com dispositivos"
+      description: "Adiciona um novo ambiente e associa dispositivos a ele"
+      operationId: createEnvironmentWithDevices
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnvironmentInputModel'
+      responses:
+        '200':
+          description: "Ambiente criado com dispositivos com sucesso"
+        '400':
+          description: "Erro na solicitação"
+
+  /environments/{local}:
+      delete:
+        summary: "Deleta um ambiente"
+        description: "Remove um ambiente específico e todos os dispositivos associados a ele"
+        operationId: deleteEnvironment
+        parameters:
+          - $ref: '#/components/parameters/local'
+        responses:
+          '200':
+            description: "Ambiente deletado com sucesso"
+          '404':
+            description: "Ambiente não encontrado"
+
+components:
+  parameters:
+    deviceId:
+      name: deviceId
+      in: path
+      required: true
+      description: "Identificador único de um dispositivo"
+      schema:
+        type: string
+    functionality:
+      name: functionality
+      in: path
+      required: true
+      description: "Nome da funcionalidade a ser atualizada"
+      schema:
+        type: string
+    local:
+      name: local
+      in: path
+      required: true
+      description: "Nome do ambiente"
+      schema:
+        type: string
+
+  schemas:
+    Device:
+      type: object
+      required:
+        - id
+        - name
+        - type
+      properties:
+        id:
+          type: string
+          description: "Identificador único do dispositivo"
+        name:
+          type: string
+          description: "Nome do dispositivo"
+        type:
+          type: string
+          description: "Tipo do dispositivo (ex: lâmpada, TV)"
+    Environment:
+      type: object
+      required:
+        - local
+        - devices
+      properties:
+        local:
+          type: string
+          description: "Nome do ambiente"
+        devices:
+          type: array
+          items:
+            $ref: '#/components/schemas/Device'
+
+    EnvironmentInputModel:
+      type: object
+      required:
+        - local
+        - deviceIds
+      properties:
+        local:
+          type: string
+          description: "Nome do ambiente a ser criado"
+        deviceIds:
+          type: array
+          items:
+            type: string
+          description: "Lista de IDs de dispositivos a serem associados ao ambiente"

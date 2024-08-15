@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  automationcenter:
+    build:
+      context: ./automationcenter
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/v1/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
+  television:
+    build:
+      context: ./device
+    command: television
+    depends_on:
+      automationcenter:
+        condition: service_healthy
+
+  lightbulb:
+    build:
+      context: ./device
+    command: lightbulb
+    depends_on:
+      automationcenter:
+        condition: service_healthy
+
+  airconditioning:
+    build:
+      context: ./device
+    command: airconditioning
+    depends_on:
+      automationcenter:
+        condition: service_healthy
+
+  eletronicgate:
+    build:
+      context: ./device
+    command: eletronicgate
+    depends_on:
+      automationcenter:
+        condition: service_healthy    
+
+  curtain:
+    build:
+      context: ./device
+    command: curtain
+    depends_on:
+      automationcenter:
+        condition: service_healthy    
+
+  soundsystem:
+    build:
+      context: ./device
+    command: soundsystem
+    depends_on:
+      automationcenter:
+        condition: service_healthy    
+
+  client:
+    build:
+      context: ./client
+    tty: true
+    stdin_open: true
+    entrypoint: []
+    command: tail -f /dev/null
+
+  
+  # rabbit:
+  #   image: rabbitmq:3-management-alpine
+  #   ports:
+  #     - "5672:5672"
+  #     - "15672:15672"
